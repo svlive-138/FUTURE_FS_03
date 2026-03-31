@@ -25,12 +25,17 @@ router.post('/', validateContact, async (req, res) => {
     const contact = new Contact(req.body);
     await contact.save();
 
-    // Send confirmation email to user
-    await sendContactConfirmationEmail(
-      req.body.email,
-      req.body.name,
-      req.body.subject
-    );
+    // Send confirmation email to user (don't fail if email fails)
+    try {
+      await sendContactConfirmationEmail(
+        req.body.email,
+        req.body.name,
+        req.body.subject
+      );
+    } catch (emailError) {
+      console.warn('Warning: Email failed to send:', emailError.message);
+      // Continue anyway - contact was saved
+    }
 
     res.status(201).json({
       message: 'Thank you for reaching out! We will get back to you soon.',

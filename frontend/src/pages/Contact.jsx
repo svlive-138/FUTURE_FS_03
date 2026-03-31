@@ -108,7 +108,7 @@ const Contact = () => {
 
               {/* WhatsApp CTA */}
               <a
-                href="https://wa.me/919414991000?text=Hi%20I%20Gym%2C%20I%27m%20interested%20in%20your%20membership%20plans"
+                href="https://wa.me/9251052000?text=Hi%20I%20Gym%2C%20I%27m%20interested%20in%20your%20membership%20plans"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="card p-6 bg-gradient-to-r from-green-900 to-green-800 border-green-700 hover:shadow-lg hover:shadow-green-500/20"
