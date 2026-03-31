@@ -4,6 +4,7 @@ import Admin from '../models/admin.model.js';
 import Membership from '../models/membership.model.js';
 import Contact from '../models/contact.model.js';
 import Testimonial from '../models/testimonial.model.js';
+import { sendReplyEmail } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -132,21 +133,41 @@ router.put('/contacts/:id/reply', verifyToken, async (req, res) => {
   try {
     const { reply } = req.body;
 
-    const contact = await Contact.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: 'replied',
-        reply,
-        repliedAt: new Date(),
-      },
-      { new: true }
-    );
-
+    // Find the contact first
+    const contact = await Contact.findById(req.params.id);
     if (!contact) {
       return res.status(404).json({ error: 'Contact not found' });
     }
 
-    res.json({ message: 'Reply sent successfully', contact });
+    // Send reply email
+    const emailResult = await sendReplyEmail(
+      contact.email,
+      contact.name,
+      contact.subject,
+      reply
+    );
+
+    // Update contact status to 'replied' only if email was sent successfully
+    const updateData = {
+      status: emailResult.success ? 'replied' : 'read',
+      reply,
+      repliedAt: new Date(),
+    };
+
+    const updatedContact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    // Return response with email status
+    res.json({
+      message: emailResult.success 
+        ? 'Reply sent successfully' 
+        : 'Reply saved but email failed to send',
+      contact: updatedContact,
+      emailStatus: emailResult,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
